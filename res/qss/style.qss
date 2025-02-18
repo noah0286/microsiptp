@@ -1,0 +1,16 @@
+QMainWindow#Telephone {
+    background: transparent;
+    color: black;
+}
+
+QDialog#Call {
+    font-size: 8pt;
+    background: transparent;
+    color: black;
+    opacity: 100
+}
+
+QDialog#Call > QLabel#whoLabel {
+    font-size: 8pt;
+    color: black;
+}
