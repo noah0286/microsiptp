@@ -58,6 +58,10 @@ private slots:
 	void openTransferCallDialog();
 	void onWindowClose();
 
+    void on_fileSelectPushButton_clicked();
+    void on_startPlayToRemotePushButton_clicked();
+    void on_stopPlayToRemotePushButton_clicked();
+
 private:
     QString getNumberFromURI(QString uri);
 

@@ -114,3 +114,67 @@ void MyCall::doHangup() {
 
     hangup(prm);
 }
+
+void MyCall::startPlayFileToRemote(const QString &file, bool loop) {
+    auto callInfo = getInfo();
+
+    unsigned playOptions = (loop ? 0 : PJMEDIA_FILE_NO_LOOP);
+
+    try {
+        for (unsigned idx = 0; idx < callInfo.media.size(); idx++) {
+            if (callInfo.media[idx].type == PJMEDIA_TYPE_AUDIO && getMedia(idx)) {
+                auto *audMed = (pj::AudioMedia *) getMedia(idx);
+
+                auto &audDevMgr = pj::Endpoint::instance().audDevManager();
+                audDevMgr.getCaptureDevMedia().stopTransmit(*audMed);
+                try {
+                    if (mAudioPlayer) {
+                        if (mIsPlayingToRemote) mAudioPlayer->stopTransmit(*audMed);
+                        mIsPlayingToRemote = false;
+                        mAudioPlayer.reset();
+                    }
+                    mAudioPlayer = std::make_shared<pj::AudioMediaPlayer>();
+                    mAudioPlayer->createPlayer(file.toUtf8().toStdString(), playOptions);
+                    mAudioPlayer->startTransmit(*audMed);
+                    mIsPlayingToRemote = true;
+                } catch (pj::Error &e) {
+                    qWarning() << "sid " << getId() << ",failed to play " << file
+                               << ", err " << QString::fromStdString(e.reason);
+                    audDevMgr.getCaptureDevMedia().startTransmit(*audMed);
+                }
+            }
+        }
+    } catch (pj::Error &e) {
+        qWarning() << "sid " << getId()
+        << ", err " << QString::fromStdString(e.reason);
+    }
+}
+
+void MyCall::stopPlayFileToRemote() {
+    if (!mIsPlayingToRemote) return;
+
+    auto callInfo = getInfo();
+
+    try {
+        for (unsigned idx = 0; idx < callInfo.media.size(); idx++) {
+            if (callInfo.media[idx].type == PJMEDIA_TYPE_AUDIO && getMedia(idx)) {
+                auto *audMed = (pj::AudioMedia *) getMedia(idx);
+
+                auto &audDevMgr = pj::Endpoint::instance().audDevManager();
+                try {
+                    mAudioPlayer->stopTransmit(*audMed);
+                    mIsPlayingToRemote = false;
+                } catch (pj::Error &e) {
+                    qWarning() << "sid " << getId()
+                               << ", failed  to stop"
+                               << ", err " << QString::fromStdString(e.reason);
+                }
+
+                audDevMgr.getCaptureDevMedia().startTransmit(*audMed);
+            }
+        }
+    } catch (pj::Error &e) {
+        qWarning() << "sid " << getId()
+                    << ", err " << QString::fromStdString(e.reason);
+    }
+}

@@ -9,6 +9,7 @@
 #include <QShortcut>
 #include <QRegularExpression>
 #include <QDebug>
+#include <QFileDialog>
 
 CallDialog::CallDialog(TelephoneMainWindow *parent,
                        CallDirection direction,
@@ -74,6 +75,8 @@ CallDialog::CallDialog(TelephoneMainWindow *parent,
     if (mCallDirection == CallDirection::outbound) {
         mUi->answerButton->deleteLater();
 	}
+
+    mUi->playFileGroupBox->hide();
 }
 
 CallDialog::~CallDialog() {
@@ -102,7 +105,8 @@ void CallDialog::setInstance(MyCall *telephoneCall) {
 	} else {
         auto inboundAudio = new QSoundEffect();
 		whoLabel.append("From: ");
-		whoLabel.append(QString::fromStdString(ci.localContact));
+        //whoLabel.append(QString::fromStdString(ci.localContact));
+        whoLabel.append(QString::fromStdString(ci.remoteContact));
 
         if (mCustomRingtone.isEmpty()) {
             inboundAudio->setSource(QUrl::fromLocalFile(":/sound/inbound-ring.wav"));
@@ -163,6 +167,7 @@ void CallDialog::onWindowClose() {
 void CallDialog::callbackAnswer() {
     mUi->dtmfInput->show();
     mUi->callAction->show();
+    mUi->playFileGroupBox->show();
     mIsAnswered = true;
 
     if (mOutboundAudio) {
@@ -178,6 +183,8 @@ void CallDialog::actionAnswer() {
 
     mUi->dtmfInput->show();
     mUi->callAction->show();
+    mUi->playFileGroupBox->show();
+
     if (mInboundAudio) {
         mInboundAudio->stop();
         delete mInboundAudio;
@@ -247,4 +254,34 @@ QString CallDialog::getNumberFromURI(QString uri) {
     QRegularExpressionMatch match = re.match(uri);
     QString number = match.captured("number");
     return number;
+}
+
+void CallDialog::on_fileSelectPushButton_clicked()
+{
+    auto f = QFileDialog::getOpenFileName(this,
+                                        tr("Select Audio(8k,16k,32k,48k, 16bit PCM monochannel"),
+                                        QString(),
+                                        tr("Audio Files (*.wav)")
+                                        );
+
+    if (f.isEmpty()) {
+        qDebug() << "select empty audio file";
+        return;
+    }
+
+    mUi->fileSelectedLabel->setText(f);
+}
+
+void CallDialog::on_startPlayToRemotePushButton_clicked()
+{
+    auto f = mUi->fileSelectedLabel->text().trimmed();
+    if (f.isEmpty())
+        return;
+
+    mCall->startPlayFileToRemote(f, mUi->loopPlayCheckBox->isChecked());
+}
+
+void CallDialog::on_stopPlayToRemotePushButton_clicked()
+{
+    mCall->stopPlayFileToRemote();
 }

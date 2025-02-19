@@ -104,12 +104,12 @@ set_target_properties(microsiptp PROPERTIES
     MACOSX_BUNDLE_SHORT_VERSION_STRING ${PROJECT_VERSION_MAJOR}.${PROJECT_VERSION_MINOR}
     MACOSX_BUNDLE TRUE
     WIN32_EXECUTABLE TRUE
-    QT_TARGET_COMPANY_NAME "freeorxx@sina.com"
+    QT_TARGET_COMPANY_NAME "freeorvip@gmail.com"
     QT_TARGET_RC_ICONS "${CMAKE_CURRENT_SOURCE_DIR}/res/image/logo.ico"
     QT_TARGET_PRODUCT_NAME "microsiptp"
     QT_TARGET_DESCRIPTION "micro sip telephone"
-    QT_TARGET_VERSION "0.1.0.0"
-    QT_TARGET_COPYRIGHT "freeorxx@sina.com"
+    QT_TARGET_VERSION "0.1.1.0"
+    QT_TARGET_COPYRIGHT "freeorvip@gmail.com"
 )
 if(WIN32)
     _qt_internal_generate_win32_rc_file(${PROJECT_NAME})

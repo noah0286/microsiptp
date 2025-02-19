@@ -1,5 +1,7 @@
 #pragma once
 
+#include <memory>
+
 #include <QString>
 
 #include <pjsua2.hpp>
@@ -22,6 +24,12 @@ public:
 	void doAnswer();
 	void doHangup();
 
+    void startPlayFileToRemote(const QString &file, bool loop);
+    void stopPlayFileToRemote();
+
 private:
     CallDialog *mCallDialog{nullptr};
+
+    std::shared_ptr<pj::AudioMediaPlayer> mAudioPlayer;
+    bool mIsPlayingToRemote{false};
 };
