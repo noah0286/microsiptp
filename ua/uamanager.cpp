@@ -74,6 +74,14 @@ pj::AccountConfig UserAgentManager::getAccountConfig(Telephone *mTelephone) {
     }
 	acfg.natConfig.udpKaIntervalSec = mTelephone->keep_alive_expiry_delay;
 	acfg.sipConfig.authCreds.push_back(cred);
+
+// *  0: SRTP does not require secure signaling
+// *  1: SRTP requires secure transport such as TLS
+// *  2: SRTP requires secure end-to-end transport (SIPS)
+    acfg.mediaConfig.srtpSecureSignaling = 0;
+    // 0 - disable, 1 - optional, 2 - mandatory
+    acfg.mediaConfig.srtpUse = pjmedia_srtp_use(mTelephone->srtp_use);
+
 	return acfg;
 }
 

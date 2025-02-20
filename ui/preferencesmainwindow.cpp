@@ -116,6 +116,7 @@ void PreferencesMainWindow::itemChanged(QListWidgetItem *current, QListWidgetIte
     mUi->keepAliveDelayEdit->setText(QString::number(tel.keep_alive_expiry_delay));
     mUi->registrationDelayEdit->setText(QString::number(tel.registration_expiry_delay));
     mUi->customRingtoneButton->setText(tel.custom_ringtone);
+    mUi->srtpModelComboBox->setCurrentIndex(tel.srtp_use);
 
     mCurrentTelephone = current;
 }
@@ -186,6 +187,7 @@ void PreferencesMainWindow::saveChanges() {
     tel.transport = mUi->transportCombobox->currentIndex() + 1;
     tel.keep_alive_expiry_delay = mUi->keepAliveDelayEdit->text().toInt();
     tel.registration_expiry_delay = mUi->registrationDelayEdit->text().toInt();
+    tel.srtp_use = mUi->srtpModelComboBox->currentIndex();
 
     mUi->descriptionEdit->setEnabled(!tel.active);
     mUi->nameEdit->setEnabled(!tel.active);
@@ -234,6 +236,7 @@ void PreferencesMainWindow::newItem() {
     tel.registration_expiry_delay = 300;
     tel.use_stun = 0;
     //tel.stun_server = QString("");
+    tel.srtp_use = 0;
 
     mManager->saveTelephone(&tel);
     mManager->newMTelephone(tel);

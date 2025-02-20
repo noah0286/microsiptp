@@ -24,7 +24,8 @@ CREATE TABLE IF NOT EXISTS telephones( \
     keep_alive_expiry_delay integer, \
     registration_expiry_delay integer, \
     use_stun integer, \
-    stun_server TEXT\
+    stun_server TEXT, \
+    srtp_use integer \
 )";
 
 
@@ -47,7 +48,8 @@ SELECT id, \
     keep_alive_expiry_delay, \
     registration_expiry_delay, \
     use_stun, \
-    stun_server \
+    stun_server, \
+    srtp_use \
     FROM telephones;";
 
 static QString sSqlTableTelInsert = "\
@@ -70,7 +72,8 @@ subscription_expiry_delay, \
 keep_alive_expiry_delay, \
 registration_expiry_delay, \
 use_stun, \
-stun_server \
+stun_server, \
+srtp_use \
 ) VALUES (\
 :description, \
 :name, \
@@ -90,7 +93,8 @@ stun_server \
 :keep_alive_expiry_delay, \
 :registration_expiry_delay, \
 :use_stun, \
-:stun_server \
+:stun_server, \
+:srtp_use \
 )";
 
 static QString sSqlTableTelActiveCount = "\
@@ -117,7 +121,8 @@ subscription_expiry_delay=:subscription_expiry_delay, \
 keep_alive_expiry_delay=:keep_alive_expiry_delay, \
 registration_expiry_delay=:registration_expiry_delay, \
 use_stun=:use_stun, \
-stun_server=:stun_server \
+stun_server=:stun_server, \
+srtp_use=:srtp_use \
 WHERE id=:id";
 
 static QString sSqlTableTelDelete = "\

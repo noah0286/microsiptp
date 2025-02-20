@@ -48,3 +48,12 @@ void UserAgent::dispatchUiMessage(QString message) {
     QStatusBar *status = mTelephone->statusBar();
 	status->showMessage(message);
 }
+
+void UserAgent::setSRTPPolicy()
+{
+    auto accountInfo = getInfo();
+
+
+    //modify(cfg)
+
+}

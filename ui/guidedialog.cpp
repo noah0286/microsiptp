@@ -87,6 +87,7 @@ void GuideDialog::accept() {
     tel.registration_expiry_delay = 300;
     tel.use_stun = 0;
     tel.stun_server = QString("");
+    tel.srtp_use = 0;
 
     mManager->saveTelephone(&tel);
     mManager->newMTelephone(tel);

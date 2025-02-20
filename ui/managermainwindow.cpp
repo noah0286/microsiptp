@@ -212,7 +212,8 @@ void ManagerMainWindow::loadFromDatabase() {
             query.value(idx++).toInt(),
             query.value(idx++).toInt(),
             query.value(idx++).toInt(),
-            query.value(idx++).toString()
+            query.value(idx++).toString(),
+            query.value(idx++).toInt()
 		};
 
         newMTelephone(telephone);
@@ -293,6 +294,7 @@ void ManagerMainWindow::saveTelephone(Telephone *telephone) {
 	query.bindValue(":registration_expiry_delay", telephone->registration_expiry_delay);
 	query.bindValue(":use_stun", telephone->use_stun);
 	query.bindValue(":stun_server", telephone->stun_server);
+    query.bindValue(":srtp_use", telephone->srtp_use);
 
 	if (!query.exec()) {
         qWarning() << "ERROR: " << query.lastError().text();
@@ -331,6 +333,7 @@ void ManagerMainWindow::updateTelephone(Telephone *telephone) {
 	query.bindValue(":registration_expiry_delay", telephone->registration_expiry_delay);
 	query.bindValue(":use_stun", telephone->use_stun);
 	query.bindValue(":stun_server", telephone->stun_server);
+    query.bindValue(":srtp_use", telephone->srtp_use);
 	query.bindValue(":id", telephone->id);
 
 	qDebug() << telephone->id;

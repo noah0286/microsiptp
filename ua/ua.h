@@ -22,6 +22,8 @@ public:
     void setInstance(TelephoneMainWindow *telephone);
 	void dispatchUiMessage(QString message);
 
+    void setSRTPPolicy();
+
 signals:
     void sRegisterStatusChanged(bool state);
 	void sNewCall(MyCall *call);

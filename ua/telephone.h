@@ -26,4 +26,6 @@ struct Telephone {
     int registration_expiry_delay;
     int use_stun;
     QString stun_server;
+
+    int srtp_use{0};
 };
