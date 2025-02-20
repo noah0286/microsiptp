@@ -2,6 +2,10 @@
 
 microsip telephone based on pjproject and qt6
 
+## System Tray
+
+![img](./images/system_tray.png)
+
 ## Guide
 
 ![img](./images/start_guide.png)
@@ -26,6 +30,10 @@ microsip telephone based on pjproject and qt6
 
 ![img](./images/outbound_on_call.png)
 
-## System Tray
+## Play File
 
-![img](./images/system_tray.png)
+![img](./images/oncall_play_file_to_remote.png)
+
+## Record
+
+![img](./images/oncall_record.png)
