@@ -26,7 +26,7 @@ void MyCall::onCallMediaState(pj::OnCallMediaStateParam &prm) {
 
     for (unsigned idx = 0; idx < callInfo.media.size(); idx++) {
         if (callInfo.media[idx].type == PJMEDIA_TYPE_AUDIO && getMedia(idx)) {
-            auto *audMed = (pj::AudioMedia *) getMedia(idx);
+            auto audMed = (pj::AudioMedia *) getMedia(idx);
 
             auto &audDevMgr = pj::Endpoint::instance().audDevManager();
             audMed->startTransmit(audDevMgr.getPlaybackDevMedia());
@@ -63,7 +63,7 @@ void MyCall::doMute(bool mute) {
 
     for (unsigned idx = 0; idx < callInfo.media.size(); idx++) {
         if (callInfo.media[idx].type == PJMEDIA_TYPE_AUDIO && getMedia(idx)) {
-            auto *audMed = (pj::AudioMedia *) getMedia(idx);
+            auto audMed = (pj::AudioMedia *) getMedia(idx);
 
             auto &audDevMgr = pj::Endpoint::instance().audDevManager();
             if (!mute) {
@@ -120,19 +120,16 @@ void MyCall::startPlayFileToRemote(const QString &file, bool loop) {
 
     unsigned playOptions = (loop ? 0 : PJMEDIA_FILE_NO_LOOP);
 
+    stopPlayFileToRemote();
+
     try {
         for (unsigned idx = 0; idx < callInfo.media.size(); idx++) {
             if (callInfo.media[idx].type == PJMEDIA_TYPE_AUDIO && getMedia(idx)) {
-                auto *audMed = (pj::AudioMedia *) getMedia(idx);
+                auto audMed = (pj::AudioMedia *) getMedia(idx);
 
                 auto &audDevMgr = pj::Endpoint::instance().audDevManager();
                 audDevMgr.getCaptureDevMedia().stopTransmit(*audMed);
                 try {
-                    if (mAudioPlayer) {
-                        if (mIsPlayingToRemote) mAudioPlayer->stopTransmit(*audMed);
-                        mIsPlayingToRemote = false;
-                        mAudioPlayer.reset();
-                    }
                     mAudioPlayer = std::make_shared<pj::AudioMediaPlayer>();
                     mAudioPlayer->createPlayer(file.toUtf8().toStdString(), playOptions);
                     mAudioPlayer->startTransmit(*audMed);
@@ -151,30 +148,56 @@ void MyCall::startPlayFileToRemote(const QString &file, bool loop) {
 }
 
 void MyCall::stopPlayFileToRemote() {
-    if (!mIsPlayingToRemote) return;
+    if (mAudioPlayer)
+        mAudioPlayer.reset();
+
+    mIsPlayingToRemote = false;
+}
+
+void MyCall::startRecord(const QString &file, RecordMode mode)
+{
+    if (mIsRecord) return;
 
     auto callInfo = getInfo();
 
     try {
         for (unsigned idx = 0; idx < callInfo.media.size(); idx++) {
             if (callInfo.media[idx].type == PJMEDIA_TYPE_AUDIO && getMedia(idx)) {
-                auto *audMed = (pj::AudioMedia *) getMedia(idx);
-
-                auto &audDevMgr = pj::Endpoint::instance().audDevManager();
                 try {
-                    mAudioPlayer->stopTransmit(*audMed);
-                    mIsPlayingToRemote = false;
+                    mAudioRecorder = std::make_shared<pj::AudioMediaRecorder>();
+                    mAudioRecorder->createRecorder(file.toStdString());
+
+                    if (mode == RecordMode::both || mode ==RecordMode::remote) {
+                        auto audMed = (pj::AudioMedia *) getMedia(idx);
+                        audMed->startTransmit(*mAudioRecorder);
+                    }
+
+                    if (mode == RecordMode::both || mode ==RecordMode::local) {
+                        if (mIsPlayingToRemote && mAudioPlayer) {
+                            mAudioPlayer->startTransmit(*mAudioRecorder);
+                        } else {
+                            auto &audDevMgr = pj::Endpoint::instance().audDevManager();
+                            audDevMgr.getCaptureDevMedia().startTransmit(*mAudioRecorder);
+                        }
+                    }
+
+                    mIsRecord = true;
                 } catch (pj::Error &e) {
-                    qWarning() << "sid " << getId()
-                               << ", failed  to stop"
+                    qWarning() << "sid " << getId() << ",failed to record " << file
                                << ", err " << QString::fromStdString(e.reason);
                 }
-
-                audDevMgr.getCaptureDevMedia().startTransmit(*audMed);
             }
         }
     } catch (pj::Error &e) {
         qWarning() << "sid " << getId()
-                    << ", err " << QString::fromStdString(e.reason);
+        << ", err " << QString::fromStdString(e.reason);
     }
+}
+
+void MyCall::stopRecord()
+{
+    if (mAudioRecorder)
+        mAudioRecorder.reset();
+
+    mIsRecord = false;
 }

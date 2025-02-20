@@ -61,6 +61,9 @@ private slots:
     void on_fileSelectPushButton_clicked();
     void on_startPlayToRemotePushButton_clicked();
     void on_stopPlayToRemotePushButton_clicked();
+    void on_recordFileStartPushButton_clicked();
+    void on_recordFileStopPushButton_clicked();
+    void on_recordFileStoreDirPushButton_clicked();
 
 private:
     QString getNumberFromURI(QString uri);
@@ -82,4 +85,6 @@ private:
     bool mIsDisableRingback{false};
 
     TransferCallDialog *mTransferCallDiablog{nullptr};
+
+    int64_t mStartTimestamp{0};
 };

@@ -6,6 +6,8 @@
 
 #include "mycall.h"
 
+#include <ctime>
+
 #include <QShortcut>
 #include <QRegularExpression>
 #include <QDebug>
@@ -76,7 +78,7 @@ CallDialog::CallDialog(TelephoneMainWindow *parent,
         mUi->answerButton->deleteLater();
 	}
 
-    mUi->playFileGroupBox->hide();
+    mStartTimestamp = time(nullptr);
 }
 
 CallDialog::~CallDialog() {
@@ -167,7 +169,6 @@ void CallDialog::onWindowClose() {
 void CallDialog::callbackAnswer() {
     mUi->dtmfInput->show();
     mUi->callAction->show();
-    mUi->playFileGroupBox->show();
     mIsAnswered = true;
 
     if (mOutboundAudio) {
@@ -183,7 +184,6 @@ void CallDialog::actionAnswer() {
 
     mUi->dtmfInput->show();
     mUi->callAction->show();
-    mUi->playFileGroupBox->show();
 
     if (mInboundAudio) {
         mInboundAudio->stop();
@@ -256,8 +256,7 @@ QString CallDialog::getNumberFromURI(QString uri) {
     return number;
 }
 
-void CallDialog::on_fileSelectPushButton_clicked()
-{
+void CallDialog::on_fileSelectPushButton_clicked() {
     auto f = QFileDialog::getOpenFileName(this,
                                         tr("Select Audio(8k,16k,32k,48k, 16bit PCM monochannel"),
                                         QString(),
@@ -272,8 +271,7 @@ void CallDialog::on_fileSelectPushButton_clicked()
     mUi->fileSelectedLabel->setText(f);
 }
 
-void CallDialog::on_startPlayToRemotePushButton_clicked()
-{
+void CallDialog::on_startPlayToRemotePushButton_clicked() {
     auto f = mUi->fileSelectedLabel->text().trimmed();
     if (f.isEmpty())
         return;
@@ -281,7 +279,66 @@ void CallDialog::on_startPlayToRemotePushButton_clicked()
     mCall->startPlayFileToRemote(f, mUi->loopPlayCheckBox->isChecked());
 }
 
-void CallDialog::on_stopPlayToRemotePushButton_clicked()
-{
+void CallDialog::on_stopPlayToRemotePushButton_clicked() {
     mCall->stopPlayFileToRemote();
 }
+
+void CallDialog::on_recordFileStartPushButton_clicked() {
+    static const QString defaultExt = ".wav";
+    auto d = mUi->recordFileStoreDirLabel->text().trimmed();
+    if (d.isEmpty()) return;
+
+    // 0 - local, 1 - remote, 2 - both
+    auto mode = MyCall::RecordMode(mUi->recordFileAudioModeComboBox->currentIndex());
+
+    auto cinfo = mCall->getInfo();
+    auto localUri = QString::fromStdString(cinfo.localUri).toUtf8().toBase64(QByteArray::Base64Option::Base64UrlEncoding);
+    auto remoteUri = QString::fromStdString(cinfo.remoteUri).toUtf8().toBase64(QByteArray::Base64Option::Base64UrlEncoding);
+
+    QString fileName = (mCallDirection == CallDirection::outbound) ? "out_" : "in_";
+
+    fileName.append(localUri + "_");
+    fileName.append(remoteUri + "_");
+
+    switch (mode) {
+    case MyCall::RecordMode::local:
+        fileName.append("l_");
+        break;
+    case MyCall::RecordMode::remote:
+        fileName.append("r_");
+        break;
+    case MyCall::RecordMode::both:
+        fileName.append("b_");
+        break;
+    }
+
+    fileName.append(QString::number(mStartTimestamp) + "_");
+    fileName.append(QString::number(time(nullptr)));
+    fileName.append(defaultExt);
+
+    QDir dir(d);
+    auto f = dir.absoluteFilePath(fileName);
+
+    mCall->startRecord(f, mode);
+}
+
+void CallDialog::on_recordFileStopPushButton_clicked() {
+    mCall->stopRecord();
+}
+
+void CallDialog::on_recordFileStoreDirPushButton_clicked()
+{
+    auto f = QFileDialog::getExistingDirectory(this,
+                                          tr("Record Store Directory"),
+                                          QString(),
+                                          QFileDialog::ShowDirsOnly | QFileDialog::DontResolveSymlinks
+                                          );
+
+    if (f.isEmpty()) {
+        qDebug() << "select empty directory";
+        return;
+    }
+
+    mUi->recordFileStoreDirLabel->setText(f);
+}
+
