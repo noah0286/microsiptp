@@ -84,6 +84,7 @@ target_link_libraries(microsiptp
     Qt${QT_VERSION_MAJOR}::Widgets
     Qt${QT_VERSION_MAJOR}::Sql
     Qt${QT_VERSION_MAJOR}::Multimedia
+    ${CMAKE_CURRENT_SOURCE_DIR}/deps/lib/bcg729.lib
 )
 
 target_link_libraries(microsiptp

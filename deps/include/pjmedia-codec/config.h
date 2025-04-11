@@ -536,7 +536,7 @@
  * Default: 0 
  */
 #ifndef PJMEDIA_HAS_BCG729
-#   define PJMEDIA_HAS_BCG729                           0
+#   define PJMEDIA_HAS_BCG729                           1
 #endif
 
 
